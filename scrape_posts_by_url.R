@@ -157,6 +157,21 @@ scrape_posts_by_url <- function(urls_file,
   message(paste("Found", length(urls), "URLs to scrape"))
 
   #####################################
+  # Initialize CSV with header
+
+  header_df <- tibble(
+    url = character(),
+    datetime = character(),
+    content = character(),
+    likes = numeric(),
+    retweets = numeric(),
+    comments = numeric(),
+    quotes = numeric(),
+    views = numeric()
+  )
+  write.csv(header_df, output_file, row.names = FALSE)
+
+  #####################################
   # Initialize browser
 
   ctx <- SB(uc = TRUE, test = FALSE, locale = "en", headless = headless)
@@ -178,9 +193,9 @@ scrape_posts_by_url <- function(urls_file,
   Sys.sleep(1)
 
   #####################################
-  # Scrape each URL
+  # Scrape each URL and save incrementally
 
-  all_posts <- list()
+  success_count <- 0
 
   for (i in seq_along(urls)) {
 
@@ -191,7 +206,28 @@ scrape_posts_by_url <- function(urls_file,
       post_data <- scrape_single_post(sb, urls[i], domain)
 
       if (!is.null(post_data)) {
-        all_posts[[length(all_posts) + 1]] <- post_data
+        # Clean data immediately
+        post_data$url <- urls[i]
+        post_data$datetime <- as.character(parse_date_time(
+          gsub(" · ", " ", post_data$datetime),
+          orders = "b d, Y I:M p", tz = "UTC"
+        ))
+        post_data$likes <- as.numeric(gsub(",", "", post_data$likes))
+        post_data$retweets <- as.numeric(gsub(",", "", post_data$retweets))
+        post_data$comments <- as.numeric(gsub(",", "", post_data$comments))
+        post_data$quotes <- as.numeric(gsub(",", "", post_data$quotes))
+        post_data$views <- as.numeric(gsub(",", "", post_data$views))
+
+        # Reorder columns
+        post_data <- post_data %>%
+          select(url, datetime, content, likes, retweets, comments, quotes, views)
+
+        # Append to CSV immediately
+        write.table(post_data, output_file, sep = ",", row.names = FALSE,
+                    col.names = FALSE, append = TRUE, quote = TRUE)
+
+        success_count <- success_count + 1
+        message(paste("  -> Saved to CSV (total:", success_count, ")"))
       }
 
       # Small delay between requests
@@ -206,39 +242,13 @@ scrape_posts_by_url <- function(urls_file,
   # Exit browser
   ctx$`__exit__`(NULL, NULL, NULL)
 
-  #####################################
-  # Combine and clean data
+  message(paste("Completed! Total posts saved:", success_count, "to", output_file))
 
-  if (length(all_posts) > 0) {
-
-    result <- bind_rows(all_posts)
-
-    # Parse datetime
-    result$datetime <- parse_date_time(gsub(" · ", " ", result$datetime),
-                                       orders = "b d, Y I:M p", tz = "UTC")
-
-    # Convert stats to numeric
-    result$likes <- as.numeric(gsub(",", "", result$likes))
-    result$retweets <- as.numeric(gsub(",", "", result$retweets))
-    result$comments <- as.numeric(gsub(",", "", result$comments))
-    result$quotes <- as.numeric(gsub(",", "", result$quotes))
-    result$views <- as.numeric(gsub(",", "", result$views))
-
-    # Reorder columns
-    result <- result %>%
-      select(url, datetime, content, likes, retweets, comments, quotes, views)
-
-    # Save to CSV
-    write.csv(result, output_file, row.names = FALSE)
-    message(paste("Saved", nrow(result), "posts to", output_file))
-
-    return(result)
-
+  # Return the final data
+  if (file.exists(output_file)) {
+    return(read.csv(output_file))
   } else {
-
-    message("No posts were successfully scraped")
     return(NULL)
-
   }
 
 }
