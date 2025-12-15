@@ -8,22 +8,14 @@ editor: visual
 must being used after running the first analysis qmd to load packages and data
 
 ```{r}
-library(ggplot2)
-library(dplyr)
-
-# 1. Function to extract the coefficient for 'score_centered'
 get_score_effect <- function(model, label) {
   summ <- summary(model)
-  # Extract the row for score_centered
   coef_row <- summ$coefficients["score_centered", ]
   
   data.frame(
     Metric = label,
     Estimate = coef_row["Estimate"],
-    Std_Error = coef_row["Std. Error"],
-    # Calculate 95% Confidence Interval
-    CI_Lower = coef_row["Estimate"] - 1.96 * coef_row["Std. Error"],
-    CI_Upper = coef_row["Estimate"] + 1.96 * coef_row["Std. Error"]
+    Std_Error = coef_row["Std. Error"]
   )
 }
 
@@ -35,28 +27,61 @@ plot_data <- bind_rows(
   get_score_effect(model_b4, "Views")
 )
 
-# 3. Create the Plot
-ggplot(plot_data, aes(x = Estimate, y = reorder(Metric, Estimate))) +
-  # Add Error Bars (95% CI)
-  geom_errorbarh(aes(xmin = CI_Lower, xmax = CI_Upper), height = 0.2, color = "red") +
-  # Add the Point Estimates
-  geom_point(size = 4, color = "black") +
-  # Add labels for the exact values
-  geom_text(aes(label = round(Estimate, 4)), vjust = -1.5, size = 3.5, color = "blue") +
-  # Add a vertical line at 0 (null hypothesis)
-  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
-  # Aesthetic tweaks
+# 3. Transform Data for Plotting (Convert Log -> Percentage)
+plot_data_final <- plot_data %>%
+  mutate(
+    # Calculate 95% CI on the Log Scale first
+    Log_Lower = Estimate - 1.96 * Std_Error,
+    Log_Upper = Estimate + 1.96 * Std_Error,
+    
+    # Convert estimates and CIs to Percentage Change
+    # Formula: (exp(beta) - 1) * 100
+    Pct_Change = (exp(Estimate) - 1) * 100,
+    Conf_Low_Pct = (exp(Log_Lower) - 1) * 100,
+    Conf_High_Pct = (exp(Log_Upper) - 1) * 100,
+    
+    # Reorder Metric by the size of the effect for a sorted plot
+    Metric = reorder(Metric, Pct_Change)
+  )
+
+# 4. Create the Plot in the "Lollipop" Style
+ggplot(plot_data_final, aes(x = Pct_Change, y = Metric, color = Metric)) +
+  
+  # Reference Line (0% change)
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray60") +
+  
+  # Lollipop Stick (The dotted line)
+  geom_segment(aes(x = 0, xend = Pct_Change, y = Metric, yend = Metric), 
+               linetype = "dotted", size = 0.6) +
+  
+  # Lollipop Head (The point and error bars)
+  geom_pointrange(aes(xmin = Conf_Low_Pct, xmax = Conf_High_Pct), 
+                  size = 0.8, fatten = 3) +
+  
+  # Add text labels for the exact percentage (optional but helpful)
+  geom_text(aes(label = sprintf("%.1f%%", Pct_Change)), 
+            vjust = -1.5, size = 3.5, fontface = "bold") +
+  
+  # Custom Colors for the 4 Metrics
+  scale_color_manual(values = c("Likes" = "#E74C3C",      # Red
+                                "Comments" = "#F39C12",   # Orange
+                                "Retweets" = "#27AE60",   # Green
+                                "Views" = "#2E86C1")) +   # Blue
+  
+  # Theme and Labels (Matching your previous plot)
+  theme_bw() +
   labs(
-    title = "Effect of BWS Score on Public Interactions",
-    subtitle = "Coefficient of score_centered with 95% Confidence Intervals",
-    x = "Effect Size (Approx. % Increase per 1 Unit Score)",
-    y = "Interaction Metric"
+    title = "Sensitivity of Public Interactions to BWS Score",
+    subtitle = "Percentage increase in engagement per 1-point increase in Score",
+    x = "Percentage Increase (%)",
+    y = NULL
   ) +
-  theme_minimal() +
   theme(
+    strip.text = element_text(face = "bold", size = 11),
+    axis.text.y = element_text(face = "bold", size = 11),
     plot.title = element_text(face = "bold", size = 14),
-    axis.text.y = element_text(size = 12, face = "bold"),
-    panel.grid.minor = element_blank()
+    legend.position = "none",
+    panel.grid.major.y = element_blank() # Removes horizontal grid lines for cleaner look
   )
 ```
 

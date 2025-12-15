@@ -1,0 +1,81 @@
+Based on the analysis.txt file you provided, here are the labels and detailed descriptions for the 16 topics identified by your Structural Topic Model.
+
+Topic 1: Community Celebrations & Local Governance (Puerto Rico & NY Focus)
+Label: Community Celebrations & Local Governance
+
+Description: This topic focuses on local government announcements and cultural celebrations, with a heavy emphasis on Puerto Rico and New York. It includes updates on infrastructure projects (road repairs, reopening facilities like the PR-861), announcements of new government initiatives (services for the deaf community), and festivities surrounding Hispanic Heritage Month and the Dominican Parade. It reflects politicians connecting with constituents through positive, community-focused events.
+
+Topic 2: Constituent Services, Seasonal Events & Tax Holidays
+Label: Constituent Services, Seasonal Events & Tax Holidays
+
+Description: A practical, service-oriented topic dominated by announcements for Sales Tax Holidays (specifically "Back-to-School" tax-free weekends in Texas, Florida, and Tennessee). It also includes logistical updates about cooling centers during heat waves, mobile office hours for constituent services, and general reminders about government services (paper shredding events, library cards).
+
+Topic 3: Hurricane Response & Emergency Management (Helene & Milton)
+Label: Hurricane Response & Emergency Management
+
+Description: This topic is entirely focused on the devastating 2024 hurricane season, specifically Hurricanes Helene and Milton. Content includes urgent evacuation orders (Pasco, Hillsborough, Pinellas counties), storm surge warnings, shelter locations, and updates on power restoration. It features high-intensity communication from officials like Gov. DeSantis and local sheriffs coordinating disaster response and recovery.
+
+Topic 4: Climate Change Skepticism & Anti-Net Zero Rhetoric
+Label: Climate Change Skepticism & Anti-Net Zero Rhetoric
+
+Description: This topic is defined by a distinct, repetitive argument challenging the scientific consensus on climate change. It features specific mathematical analogies (e.g., human CO2 impact being "1/2 drop in 20 Olympic pools") to argue that human contribution to global warming is negligible. The content aggressively critiques "Net Zero" policies, labeling them as economically damaging or ideologically driven ("communism").
+
+Topic 5: Democratic Campaign Momentum & Harris Endorsements
+Label: Democratic Campaign Momentum & Harris Endorsements
+
+Description: Capturing the shift in the 2024 election, this topic focuses on the Democratic Party's rally behind Kamala Harris following President Biden's withdrawal. It includes formal endorsements from state officials, excitement surrounding the Democratic National Convention (DNC), fundraising announcements, and calls for party unity to defeat Donald Trump.
+
+Topic 6: State-Level Legislative Achievements (Democratic Focus)
+Label: State-Level Legislative Achievements & Policy Wins
+
+Description: This topic highlights the governance successes of Democratic state officials, particularly in Michigan, Massachusetts, and Pennsylvania. It features Governors (like Whitmer and Shapiro) and legislators touting specific policy wins such as clean energy investments, maternal health bills, education funding, and infrastructure projects. It is a "good governance" topic focused on delivering results.
+
+Topic 7: Trump Assassination Attempts & Partisan Rhetoric Battles
+Label: Trump Assassination Attempts & Partisan Rhetoric Battles
+
+Description: Centered on the two assassination attempts against Donald Trump (Butler, PA and West Palm Beach), this topic is characterized by intense conflict. It includes Republicans blaming Democratic rhetoric (calling Trump a "threat to democracy") for inciting violence, JD Vance's defense of Trump, and heated debates over the Springfield, Ohio controversy regarding Haitian migrants.
+
+Topic 8: GOP Attacks on Tim Walz & Tennessee Election Results
+Label: GOP Attacks on Tim Walz & Tennessee Election Results
+
+Description: This topic has two distinct clusters. The primary focus is aggressive GOP opposition research against Tim Walz, attacking his handling of the 2020 Minneapolis riots, his progressive policies ("tampon Tim"), and labeling him a "radical." The secondary component is a list of congratulations for winners of Tennessee state legislative primaries, likely grouped here due to the shared context of "state elections" and "nominees."
+
+Topic 9: Environmental Activism & Rhode Island Senate Race Attacks
+Label: Environmental Activism & Rhode Island Political Attacks
+
+Description: This topic merges two threads related to environmental politics. One thread involves international activism for Paul Watson (Sea Shepherd). The other is a specific attack campaign in the Rhode Island Senate race (Patricia Morgan vs. Sheldon Whitehouse), criticizing Whitehouse for alleged hypocrisy regarding climate policy and personal ethics.
+
+Topic 10: Voter Registration Drives & Election Administration
+Label: Voter Registration Drives & Election Administration
+
+Description: A procedural topic focused on civic engagement. It is dominated by posts promoting National Voter Registration Day, reminding citizens of registration deadlines in various states (AZ, TX, PA, GA), and providing links to voting portals like IWillVote and Vote.gov. It encourages early voting and participation in the democratic process.
+
+Topic 11: Viral Controversies, Sports & Casual Commentary
+Label: Viral Controversies, Sports & Casual Commentary
+
+Description: A "catch-all" topic for cultural and conversational content. It includes a deep-dive investigation attempting to validate the Springfield "eating cats" rumors, alongside standard sports commentary (college football, Olympics) and informal social media banter. It reflects the "online personality" of politicians engaging in culture war debates or leisure topics.
+
+Topic 12: Utah Gubernatorial Conflict (Lyman vs. Cox)
+Label: Utah Gubernatorial Conflict (Lyman vs. Cox)
+
+Description: A hyper-specific topic focused on the internal Republican conflict in Utah. It is dominated by Phil Lyman's write-in campaign against incumbent Governor Spencer Cox. The content features accusations of corruption, attacks on Cox's immigration policies ("New Americans"), and disputes over election integrity and ballot access in Utah.
+
+Topic 13: Massachusetts Local Government & Community Announcements
+Label: Massachusetts Local Government & Community Announcements
+
+Description: This topic is hyper-local to the South Shore of Massachusetts (Plymouth, Kingston, Pembroke). It consists of routine announcements for Select Board meetings, congratulations to local high school sports teams (Plymouth North baseball), updates on town events (waterfront festivals), and constituent engagement from local state representatives.
+
+Topic 14: Social Justice, Reproductive Rights & Public Health Advocacy
+Label: Social Justice, Reproductive Rights & Public Health Advocacy
+
+Description: This topic aggregates progressive social advocacy. It heavily features the defense of abortion access (citing tragedies like the death of Amber Thurman), advocacy for LGBTQ+ rights, calls for gun safety legislation (Moms Demand Action), and awareness campaigns for mental health and suicide prevention.
+
+Topic 15: Border Security & Foreign Policy (Israel & Immigration)
+Label: Border Security & Foreign Policy
+
+Description: This topic combines two major GOP policy pillars: the crisis at the US southern border (migrant crime, "known gotaways") and US foreign policy in the Middle East. It includes strong support for Israel's military actions (celebrating the deaths of Hamas/Hezbollah leaders) and harsh criticism of the Biden-Harris administration's handling of global security.
+
+Topic 16: State Legislative Battles & Intra-Party Conflict (MO/AZ/MI)
+Label: State Legislative Battles & Intra-Party GOP Conflict
+
+Description: This topic focuses on the "mechanics" of state legislatures, specifically in Missouri, Arizona, and Michigan. It features intense internal GOP conflict (Freedom Caucus vs. Leadership in MO), battles between GOP legislatures and Democratic Governors (Katie Hobbs in AZ, Whitmer in MI), and debates over specific procedural issues like Initiative Petition reform.

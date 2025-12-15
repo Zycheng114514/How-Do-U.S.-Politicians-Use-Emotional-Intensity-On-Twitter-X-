@@ -29,22 +29,23 @@ pacman::p_load(
 # changed order. I have set generic labels below. 
 # Run the script, look at "top_word_single.png", and then update these labels.
 my_topic_labels <- c(
-  "Biden Withdrawal & Support for Harris",             # Topic 1
-  "Criticism of Gov. Walz & State Executives",         # Topic 2
-  "Climate Skepticism",# Topic 3
-  "Trump Assassination Attempts & Rhetoric",           # Topic 4
-  "Utah Politics (Lyman vs. Cox)",# Topic 5
-  "Voter Registration & Election Mobilization",        # Topic 6
-  "Israel-Hamas War & Border Security Criticism",      # Topic 7 (Israel/Hezbollah focus)
-  "Legislative Congratulations & Public Honors",       # Topic 8
-  "Reproductive Rights & Abortion Policy",             # Topic 9
-  "Hispanic Heritage Month & Community Events",        # Topic 10
-  "General Commentary & Casual Conversation",          # Topic 11
-  "Hurricane Helene & Emergency Response",             # Topic 12
-  "State Budget, Energy & Housing Policy",             # Topic 13
-  "California Policy, Crime & Immigration"             # Topic 14
+  "Community Celebrations & Local Governance (PR/NY)",   # Topic 1
+  "Constituent Services, Tax Holidays & Heat Safety",    # Topic 2
+  "Hurricane Response & Emergency Management",           # Topic 3
+  "Climate Change Skepticism & Anti-Net Zero Rhetoric",  # Topic 4
+  "Democratic Campaign Momentum & Harris Endorsements",  # Topic 5
+  "State Legislative Achievements & Policy Wins",        # Topic 6
+  "Trump Assassination Attempts & Partisan Rhetoric",    # Topic 7
+  "GOP Attacks on Tim Walz & TN Election Results",       # Topic 8
+  "Environmental Activism & RI Political Attacks",       # Topic 9
+  "Voter Registration Drives & Election Admin",          # Topic 10
+  "Viral Controversies, Sports & Casual Commentary",     # Topic 11
+  "Utah Gubernatorial Conflict (Lyman vs. Cox)",         # Topic 12
+  "MA Local Govt & Community Announcements",             # Topic 13
+  "Social Justice, Reproductive Rights & Public Health", # Topic 14
+  "Border Security & Foreign Policy (Israel/Immigration)", # Topic 15
+  "State Legislative Battles & Intra-Party Conflict"     # Topic 16
 )
-
 # Load the POOLED data saved from your pooling script
 out <- readRDS("models/R_topic_model/inputs/out_pool.rds")
 dta <- readRDS("models/R_topic_model/inputs/dta_pool.rds")
@@ -89,7 +90,7 @@ analyze_topic_model <- function(topic_models_list, estimates_list) {
              topic_label = reorder(topic_label, gamma))
     
     # 3. Find Thoughts 
-    thought <- findThoughts(topic_model, texts = out$meta$content, n = 15)
+    thought <- findThoughts(topic_model, texts = out$meta$content, n = 20)
     
     # 4. Dominant Topic
     dominant_topic <- data.frame(dominant_topic = apply(topic_model$theta, 1, which.max))
@@ -162,15 +163,16 @@ analyze_topic_model <- function(topic_models_list, estimates_list) {
     dev.off()
     
     png(paste0(output_dir, "corr_network_middle.png"), width = 800, height = 600)
-    try(plot(topicCorr(topic_model, cutoff = 0.14)))
+    try(plot(topicCorr(topic_model, cutoff = 0.8)))
     dev.off()
     
     png(paste0(output_dir, "corr_network_high.png"), width = 800, height = 600)
-    try(plot(topicCorr(topic_model, cutoff = 0.20)))
+    try(plot(topicCorr(topic_model, cutoff = 0.12)))
     dev.off()
     
-    png(paste0(output_dir, "race_party_combo_effect.png"), width = 4500, height = 3500, res = 300)
+    png(paste0(output_dir, "race_party_combo_effect.png"), width = 9000, height = 7000, res = 600)
     
+    clean_labels <- sort(unique(out$meta$race_party_combo))
     # SIGNIFICANTLY Increase LEFT margin (second number) to fit long labels like "Republican_Asian American"
     # c(bottom, left, top, right)
     par(mfrow = c(ceiling(topic_number / 4), 4), mar = c(4, 14, 2, 1)) 
@@ -183,8 +185,23 @@ analyze_topic_model <- function(topic_models_list, estimates_list) {
         topics = c(k),
         main = my_topic_labels[k],
         xlab = "Topic Proportion",
-        xlim = c(0, 0.45)  # Adjusted range to fit potential variations
+        xlim = c(0, 0.35),  # Adjusted range to fit potential variations
+        labeltype = "custom",  # 告诉 STM 我们要自定义点旁边的文字
+        custom.labels = " ",   # 传入一个空格 (或空字符串)，把文字“隐形”
+        # -----------------------------------------
+        
+        # --- 核心修改 2: 隐藏默认 Y 轴 (那串很长的变量名) ---
+        yaxt = "n",            
+        # -----------------------------------------------
+        
+        # 字体调整
+        cex.main = 1.5, 
+        cex.lab = 1.2
       )
+      legend("topright", legend = paste("Topic", k), bty = "n", cex = 1.5, text.font = 2)
+      # --- 核心修改 3: 手动画上干净的 Y 轴标签 ---
+      # at = 1:length... 对应每个点的高度
+      axis(2, at = 1:length(clean_labels), labels = clean_labels, las = 1, tick = FALSE, cex.axis = 1.2)
     }
     dev.off()
     
@@ -239,6 +256,7 @@ analyze_topic_model <- function(topic_models_list, estimates_list) {
         printlegend = FALSE,
         ylim = common_ylim  # Set Y limit
       )
+      legend("topright", legend = paste("Topic", k), bty = "n", cex = 1.2, text.font = 2)
     }
     dev.off()
   }
