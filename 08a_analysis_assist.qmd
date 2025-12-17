@@ -183,7 +183,8 @@ plot_data_race_main <- map_dfr(names(models_list), function(metric_name) {
   model <- models_list[[metric_name]]
   
   tidy(model, conf.int = TRUE) %>%
-    filter(str_detect(term, "race")) %>%
+    # 核心修改：增加 & !str_detect(term, ":") 以排除交互项
+    filter(str_detect(term, "race") & !str_detect(term, ":")) %>%
     mutate(
       Metric = metric_name,
       race = str_remove(term, "race")
@@ -191,6 +192,7 @@ plot_data_race_main <- map_dfr(names(models_list), function(metric_name) {
     select(Metric, race, estimate, conf.low, conf.high)
 })
 
+# 下面的绘图代码保持不变...
 reference_data <- data.frame(
   Metric = rep(names(models_list), each = 1),
   race = "White",
@@ -210,11 +212,8 @@ plot_data_final <- bind_rows(plot_data_race_main, reference_data) %>%
   )
 
 ggplot(plot_data_final, aes(x = Pct_Change, y = race, color = race)) +
-  
   facet_wrap(~Metric, scales = "free_x", ncol = 2) +
-  
   geom_vline(xintercept = 0, linetype = "dashed", color = "gray60") +
-  
   geom_segment(aes(x = 0, xend = Pct_Change, y = race, yend = race), 
                linetype = "dotted", size = 0.6) +
   geom_pointrange(aes(xmin = Conf_Low_Pct, xmax = Conf_High_Pct), 
@@ -260,6 +259,214 @@ ggplot(plot_data, aes(x = estimate, y = term)) +
   theme(
     axis.text.y = element_text(size = 11, face = "bold"),
     panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+```
+
+```{r}
+get_group_slopes <- function(model, group_var, ref_level) {
+  
+  coefs <- coef(model)
+  vc <- vcov(model)
+  
+  # Base Slope (Reference Group)
+  base_slope_name <- "score_centered"
+  base_est <- coefs[base_slope_name]
+  base_var <- vc[base_slope_name, base_slope_name]
+  
+  results <- list()
+  
+  # A. Add Reference Group
+  results[[1]] <- data.frame(
+    Group = ref_level,
+    Estimate = base_est,
+    SE = sqrt(base_var)
+  )
+  
+  # B. Add Other Groups (Base + Interaction)
+  # Look for terms like "score_centered:partyRepublican"
+  interaction_pattern <- paste0("score_centered:", group_var)
+  interaction_names <- grep(interaction_pattern, names(coefs), value = TRUE)
+  
+  for (int_name in interaction_names) {
+    clean_group_name <- str_remove(int_name, paste0("score_centered:", group_var))
+    
+    # Sum: Base + Interaction
+    est_sum <- base_est + coefs[int_name]
+    
+    # SE of Sum
+    var_int <- vc[int_name, int_name]
+    cov_int <- vc[base_slope_name, int_name]
+    se_sum <- sqrt(base_var + var_int + 2 * cov_int)
+    
+    results[[length(results) + 1]] <- data.frame(
+      Group = clean_group_name,
+      Estimate = est_sum,
+      SE = se_sum
+    )
+  }
+  
+  bind_rows(results)
+}
+
+# --- 2. Generate the Plot ---
+models_list <- list("Likes" = model_b1, "Comments" = model_b2, "Retweets" = model_b3, "Views" = model_b4)
+
+plot_data_race <- map_dfr(names(models_list), function(metric) {
+  get_group_slopes(models_list[[metric]], "race", "White") %>%
+    mutate(Metric = metric)
+}) %>%
+  mutate(
+    Pct_Change = (exp(Estimate) - 1) * 100,
+    Conf_Low = (exp(Estimate - 1.96 * SE) - 1) * 100,
+    Conf_High = (exp(Estimate + 1.96 * SE) - 1) * 100,
+    Metric = factor(Metric, levels = c("Likes", "Comments", "Retweets", "Views")),
+    Group = factor(Group, levels = c("Asian American", "Latino", "Black", "Other", "White"))
+  )
+
+ggplot(plot_data_race, aes(x = Pct_Change, y = Group, color = Group)) +
+  facet_wrap(~Metric, scales = "free_x", ncol = 2) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray60") +
+  geom_segment(aes(x = 0, xend = Pct_Change, y = Group, yend = Group), linetype = "dotted") +
+  geom_pointrange(aes(xmin = Conf_Low, xmax = Conf_High), size = 0.8, fatten = 3) +
+  scale_color_manual(values = c("White" = "#2E86C1", "Black" = "#E74C3C", "Latino" = "#F39C12", 
+                                "Asian American" = "#8E44AD", "Other" = "gray50")) +
+  theme_bw() +
+  labs(
+    title = "Racial Sensitivity to Intensity",
+    subtitle = "% Increase in Engagement per 1-point increase in Intensity",
+    x = "Percentage Increase (%)", y = NULL
+  ) +
+  theme(legend.position = "none", strip.text = element_text(face = "bold")) +
+  coord_cartesian(xlim = c(NA, 5))
+```
+
+```{r}
+library(marginaleffects)
+library(ggplot2)
+library(purrr)
+library(dplyr)
+
+# 1. Generate predictions for all models
+# 'type = "response"' ensures the estimate is in actual counts (not log units)
+all_preds <- map_dfr(names(models_list), function(metric_name) {
+  predictions(
+    models_list[[metric_name]], 
+    newdata = datagrid(
+      score_centered = seq(-2, 2, by = 0.1), 
+      race = c("White", "Black", "Latino", "Asian American", "Other")
+    ),
+    type = "response" 
+  ) %>%
+    mutate(Metric = metric_name)
+})
+
+# 2. Plotting
+ggplot(all_preds, aes(x = score_centered, y = estimate, color = race)) +
+  facet_wrap(~Metric, scales = "free_y", ncol = 2) +
+  geom_line(linewidth = 1.2) + # Removed geom_ribbon here
+  scale_color_manual(values = c(
+    "White" = "#2E86C1", 
+    "Black" = "#E74C3C", 
+    "Latino" = "#F39C12", 
+    "Asian American" = "#8E44AD", 
+    "Other" = "gray50"
+  )) +
+  theme_bw() +
+  labs(
+    title = "Impact of Race and Intensity on Predicted Engagement",
+    subtitle = "Lines show the predicted count of engagement across intensity levels",
+    x = "Intensity Score (Centered)",
+    y = "Predicted Count",
+    color = "Race"
+  ) +
+  theme(
+    legend.position = "bottom", 
+    strip.text = element_text(face = "bold", size = 11),
+    panel.grid.minor = element_blank()
+  )
+```
+
+```{r}
+
+models_list <- list("Likes" = model_b1, "Comments" = model_b2, "Retweets" = model_b3, "Views" = model_b4)
+
+# Extract Party Coefficients
+plot_data_party_main <- map_dfr(names(models_list), function(metric_name) {
+  model <- models_list[[metric_name]]
+  tidy(model, conf.int = TRUE) %>%
+    filter(str_detect(term, "party") & !str_detect(term, ":")) %>%
+    mutate(Metric = metric_name, party = str_remove(term, "party")) %>%
+    select(Metric, party, estimate, conf.low, conf.high)
+})
+
+# Add Reference Group
+reference_data <- data.frame(Metric = rep(names(models_list), each = 1),
+                             party = "Democrat", 
+                             estimate = 0, conf.low = 0, conf.high = 0)
+
+# Combine & Plot
+plot_data_final <- bind_rows(plot_data_party_main, reference_data) %>%
+  mutate(
+    Pct_Change = (exp(estimate) - 1) * 100,
+    Conf_Low_Pct = (exp(conf.low) - 1) * 100,
+    Conf_High_Pct = (exp(conf.high) - 1) * 100,
+    party = factor(party, levels = c("Republican", "Other", "Democrat")),
+    Metric = factor(Metric, levels = c("Likes", "Comments", "Retweets", "Views"))
+  )
+
+ggplot(plot_data_final, aes(x = Pct_Change, y = party, color = party)) +
+  facet_wrap(~Metric, scales = "free_x", ncol = 2) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray60") +
+  geom_segment(aes(x = 0, xend = Pct_Change, y = party, yend = party), linetype = "dotted") +
+  geom_pointrange(aes(xmin = Conf_Low_Pct, xmax = Conf_High_Pct), fatten = 3) +
+  scale_color_manual(values = c("Democrat" = "#2E86C1", "Republican" = "#E74C3C", "Other" = "#27AE60")) +
+  theme_bw() +
+  labs(x = "Percentage Difference vs. Democrat (%)", y = NULL) +
+  theme(legend.position = "none")+
+  coord_cartesian(xlim = c(NA, 100))
+```
+
+```{r}
+library(marginaleffects)
+library(ggplot2)
+library(purrr)
+library(dplyr)
+
+all_preds_party <- map_dfr(names(models_list), function(metric_name) {
+  predictions(
+    models_list[[metric_name]], 
+    newdata = datagrid(
+      score_centered = seq(-2, 2, by = 0.1), 
+      # UPDATED: Changed "Democrat" to "Democratic" to match your factor levels
+      party = c("Democratic", "Republican", "Other")
+    ),
+    type = "response" 
+  ) %>%
+    mutate(Metric = metric_name)
+})
+
+# 2. Plotting the results
+ggplot(all_preds_party, aes(x = score_centered, y = estimate, color = party)) +
+  facet_wrap(~Metric, scales = "free_y", ncol = 2) +
+  geom_line(linewidth = 1.2) +
+  # UPDATED: Ensure colors also map to "Democratic"
+  scale_color_manual(values = c(
+    "Democratic"   = "#2E86C1", 
+    "Republican" = "#E74C3C", 
+    "Other"      = "#27AE60"
+  )) +
+  theme_bw() +
+  labs(
+    title = "Party Differences: Baseline Engagement vs. Intensity Sensitivity",
+    subtitle = "Lines show predicted engagement counts; vertical height at 0 = baseline difference.",
+    x = "Intensity Score (Centered)",
+    y = "Predicted Count",
+    color = "Party"
+  ) +
+  theme(
+    legend.position = "bottom", 
+    strip.text = element_text(face = "bold", size = 11),
     panel.grid.minor = element_blank()
   )
 ```
