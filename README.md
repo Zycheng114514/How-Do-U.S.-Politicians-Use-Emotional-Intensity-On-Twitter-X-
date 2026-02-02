@@ -20,7 +20,7 @@ The intuition for this project stems from a comparative observation of social me
 ---
 
 ## 📊 Methodology
-* **Language Labeling:** We utilized a **RoBERTa model** to assign intensity scores to posts.
+* **Language Labeling:** I utilized a **RoBERTa model** to assign intensity scores to posts.
 * **Measurement:** Language intensity was measured using the **Best-Worst Scaling (BWS)** method.
 * **Topic Analysis:** **Structural Topic Modeling (STM)** was employed to analyze the distribution of intensity across various political topics.
 
@@ -32,6 +32,7 @@ The intuition for this project stems from a comparative observation of social me
 * **`models/`**: (External) Includes the RoBERTa model used for intensity labeling and the STM model files.
 * **`plots/`**: Contains all visualizations, including the STM analysis plots.
 * **`data/`**: (External) This folder contains the raw and processed data (see below).
+* **`codes/`**: Contains the codes of this project.
 
 ---
 
@@ -49,7 +50,7 @@ The data folder contains:
 ---
 
 ## ⚙️ Replication Instructions
-To replicate this research, please run the scripts in the root according to their numerical prefix:
+To replicate this research, please run the scripts in the **`codes/`** according to their numerical prefix:
 
 1.  **Main Scripts (e.g., `01_...`, `02_...`):** Run these in numerical order to produce the final results.
 2.  **Assistance Scripts (e.g., `01a_...`, `01b_...`):** These scripts handle supplementary tasks or data cleaning. They are helpful for understanding the workflow but are not the primary drivers of the final output.
