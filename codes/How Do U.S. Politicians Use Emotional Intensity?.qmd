@@ -14,13 +14,13 @@ library(pacman)
 p_load(tidyverse, ggplot2, car, lme4, lmerTest, broom, scales, lubridate,marginaleffects)
 
 # 1. Load Data
-dta <- read_csv("data/cleaned/the_dataset.csv",
+dta <- read_csv("../data/cleaned/the_dataset.csv",
                 col_types = cols(url = col_character()))
 
-url_officer <- read_csv("data/cleaned/urls_official_id.csv",
+url_officer <- read_csv("../data/cleaned/urls_official_id.csv",
                         col_types = cols(url = col_character()))
 
-officer_data <- read_csv("data/raw/official_data.csv")
+officer_data <- read_csv("../data/raw/official_data.csv")
 
 # 2. Basic Cleaning & Joining
 # Rescale original score 0-1 to 0-100
@@ -374,13 +374,14 @@ ggplot(plot_data_final, aes(x = Pct_Change, y = party, color = party)) +
   theme_bw() +
   labs(
     title = "Party Differences in Baseline Engagement",
-    subtitle = "Percentage difference compared to Democrats (at average BWS score)",
+    subtitle = "Percentage difference compared to Democrats (at mean BWS score)",
     x = "Percentage Difference vs. Democrat (%)", 
     y = NULL
   ) +
   theme(
     legend.position = "none",
-    strip.text = element_text(face = "bold")
+    strip.text = element_text(face = "bold"),
+    plot.margin = margin(t = 20, r = 10, b = 10, l = 10, unit = "pt")
   ) +
   coord_cartesian(xlim = c(NA, 100))
 ```
@@ -411,7 +412,6 @@ ggplot(plot_data_likes, aes(x = score_centered, y = estimate, color = race)) +
   )) +
   theme_bw() +
   labs(
-    title = "Racial Differences in Likes: Baseline vs. Intensity Sensitivity",
     subtitle = "Height at 0 = Baseline Difference; Steepness = Sensitivity to Intensity",
     x = "Intensity Score (Centered)",
     y = "Predicted Number of Likes",
@@ -514,8 +514,8 @@ library(stm)
 
 # 1. Load the Models (Ensure paths match your project structure)
 # Note: Using the paths found in your provided script
-topic_model <- readRDS("models/R_topic_model/stm_topic_model_16_pool.rds")
-estimated_model <- readRDS("models/R_topic_model/stm_topic_model_estimated_16_pool.rds")
+topic_model <- readRDS("../models/R_topic_model/stm_topic_model_16_pool.rds")
+estimated_model <- readRDS("../models/R_topic_model/stm_topic_model_estimated_16_pool.rds")
 
 # 2. Define Topic Labels
 my_topic_labels <- c(
