@@ -1,9 +1,6 @@
 # How Do U.S. Politicians Use Emotional Intensity?
 The project report is under `documents/`folder.
 
-**Course:** Text as Data  
-**Student:** Chris Cheng
-
 ---
 
 ## 📌 Project Overview
